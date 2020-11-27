@@ -1,6 +1,7 @@
 import asyncio
 import time
-from rafflebot.models import Settings, Prizes
+
+from rafflebot.models import Prizes, Settings
 
 
 class Award:

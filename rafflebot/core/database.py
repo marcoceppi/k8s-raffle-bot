@@ -1,9 +1,10 @@
-import aioredis
 import asyncio
 import importlib
 
-from rafflebot.core.utils import Singleton
+import aioredis
+
 from rafflebot.core.exceptions import EngineNotFound
+from rafflebot.core.utils import Singleton
 
 
 # I may have gone off the deep end combining a singleton and a factory

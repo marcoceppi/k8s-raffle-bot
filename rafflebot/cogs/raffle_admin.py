@@ -1,7 +1,7 @@
 from discord.ext import commands
 
-from rafflebot.core import utils
 from rafflebot import models
+from rafflebot.core import utils
 
 
 class RaffleAdmin(commands.Cog):
