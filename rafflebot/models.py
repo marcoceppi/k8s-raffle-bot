@@ -8,19 +8,26 @@ from rafflebot.core.database import Database
 
 
 class Model:
-    prefix = "rafflebot"
     db = Database(os.environ.get("REDIS_URL"))
+    prefix = "rafflebot"
     model = ""
+    guild = None
+
+    def __init__(self, guild: discord.Guild):
+        self.guild = guild
 
     def create_id(self):
         return str(uuid4())
 
     def key(self, record=None):
-        _key = f"{self.prefix}.{self.model}"
+        _key = f"{self.prefix}.{self.guild.id}.{self.model}"
         if record:
             _key = f"{_key}:{record}"
 
         return _key
+
+    async def exists(self, record=None):
+        return await self.db.conn.exists(self.key(record))
 
 
 class Settings(Model):
@@ -29,6 +36,8 @@ class Settings(Model):
     default_settings = {
         "award-interval": 60,
         "last-awarded": None,
+        "awardable-role": None,
+        "winner-dm-content": "",
     }
 
     def valid(self, name):
@@ -53,6 +62,12 @@ class Settings(Model):
 
         value = await self.db.conn.hget(self.key(), name)
         return self.default_settings.get(name) if not value else value
+
+    async def remove(self, name):
+        if not self.valid(name):
+            return False  # TODO: raise exception
+
+        return await self.db.conn.hdel(self.key(), name) is not False
 
 
 class Prizes(Model):
@@ -79,9 +94,12 @@ class Prizes(Model):
 
         members = {}
         for index in indexes:
-            members[index] = await self.db.conn.hgetall(self.key(index))
+            members[index] = await self.get(index)
 
         return members
+
+    async def get(self, id):
+        return await self.db.conn.hgetall(self.key(id))
 
     async def remove(self, id):
         indexes = await self.list()
@@ -100,3 +118,35 @@ class Prizes(Model):
         await self.db.conn.srem(self.key(), index)
 
         return True
+
+
+class AwardedPrizes(Model):
+    model = "winners.prizes"
+
+    async def insert(self, prize, member):
+        if not await Prizes(self.guild).exists(prize):
+            return False
+
+        await self.db.conn.hset(self.key(), prize, member)
+
+    def list(self, include_members=False):
+        if not include_members:
+            return self.db.conn.hkeys(self.key())
+
+        return self.db.conn.hgetall(self.key())
+
+
+class Winners(Model):
+    model = "winners"
+
+    async def insert(self, member, prize, when=None):
+        if not await Prizes(self.guild).exists(prize):
+            return False
+
+        if not when:
+            when = time.time()
+
+        await self.db.conn.zadd(self.key(), when, member)
+        await self.db.conn.sadd(self.key(member), prize)
+
+        await AwardedPrizes(self.guild).insert(prize, member)

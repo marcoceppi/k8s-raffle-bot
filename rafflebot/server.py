@@ -9,14 +9,15 @@ from rafflebot.cogs import (
     RaffleAdmin,
 )
 from rafflebot.core.bot import RaffleBot
-intents = discord.Intents.default()
-intents.members = True
 
 
 def run():
+    intents = discord.Intents.default()
+    intents.members = True
     # Todo: just do when mentioned
     bot = RaffleBot(
         command_prefix=discord.ext.commands.when_mentioned_or("SIG Raffle"),
+        intents=intents,
     )
 
     bot.add_cog(Raffle(bot))
