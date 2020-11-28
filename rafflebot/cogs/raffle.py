@@ -3,6 +3,7 @@ import random
 import discord
 from discord.ext import commands
 
+from rafflebot.core import utils
 from rafflebot.models import (
     AwardedPrizes,
     Prizes,
@@ -32,18 +33,35 @@ class Raffle(commands.Cog):
 
         return [prize for prize in all_prizes if prize not in awarded_prizes]
 
+    async def notify_winner(self, member, prize):
+        msg = await Settings(member.guild).get("winner-dm-content")
+
+        await member.send(msg.format(guild=member.guild, prize_name=prize["name"], prize_code=prize["code"]))
+
+    async def notify_channel(self, member, prize):
+        msg = await Settings(member.guild).get("winner-announce-content")
+        channel = await Settings(member.guild).get("winner-announce-channel")
+        channel_id = utils.unmentioned(channel)
+        channel = self.bot.get_channel(int(channel_id))
+
+        if not msg or not channel:
+            return
+
+        await channel.send(
+            msg.format(member=member.mention, guild=member.guild, prize_name=prize["name"], prize_code=prize["code"])
+        )
+
+    async def notify(self, channel, text):
+        pass
+
     async def award(self, guild: discord.Guild):
         members = await self.get_eligable_members(guild)
         prizes = await self.get_eligable_prizes(guild)
         winner = random.choice(members)
         prize_id = random.choice(prizes)
-
         prize = await Prizes(guild).get(prize_id)
 
         await Winners(guild).insert(winner.id, prize_id)
 
-        name = prize["name"]
-        code = prize["code"]
-
-        msg = await Settings(guild).get("winner-dm-content")
-        await winner.send(msg.format(guild=guild, prize_name=name, prize_code=code))
+        await self.notify_winner(winner, prize)
+        await self.notify_channel(winner, prize)

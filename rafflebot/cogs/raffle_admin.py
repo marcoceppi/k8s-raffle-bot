@@ -1,10 +1,16 @@
+import datetime
+
+import humanize
 from discord.ext import commands
 
 from rafflebot import models
-from rafflebot.core import utils
+from rafflebot.core import emoji, utils
 
 
 class RaffleAdmin(commands.Cog, name="Raffle Administration"):
+    def __init__(self, bot):
+        self.bot = bot
+
     @commands.command(name="add-prize")
     async def add_prize(self, ctx, *args):
         if len(args) != 2:
@@ -23,11 +29,17 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
 
         await utils.success(ctx)
 
+    def prize_status(self, prize, awarded_prizes):
+        return emoji.emoji_status(prize, awarded_prizes, emoji.PRIZE_AWARDED, emoji.PRIZE_AVAILABLE)
+
     @commands.command(name="list-prizes")
     async def list_prizes(self, ctx):
         prizes = await models.Prizes(ctx.guild).list(include_members=True)
+        awarded_prizes = await models.AwardedPrizes(ctx.guild).list()
 
-        prizes = [f"✨ {val['name']} ({k.split('-')[0]})" for k, val in prizes.items()]
+        prizes = [
+            f"{self.prize_status(k, awarded_prizes)} {val['name']} ({k.split('-')[0]})" for k, val in prizes.items()
+        ]
         if prizes:
             await ctx.send("\n".join(prizes))
 
@@ -36,7 +48,7 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
     @commands.command(name="list-settings")
     async def list_settings(self, ctx):
         settings = await models.Settings(ctx.guild).list()
-        settings = [f"🛠 {k}: {v}" for k, v in settings.items()]
+        settings = [f"{emoji.SETTING} {k}: {v}" for k, v in settings.items()]
         await ctx.send("\n".join(settings))
         await utils.success(ctx)
 
@@ -55,4 +67,24 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
         if not (await models.Settings(ctx.guild).remove(name)):
             return await utils.failure(ctx)
 
+        await utils.success(ctx)
+
+    @commands.command(name="list-winners")
+    async def list_winners(self, ctx):
+        winners = await models.Winners(ctx.guild).list(include_members=True)
+
+        output = []
+
+        for member, prizes in winners.items():
+            for p in prizes:
+                prize = await models.Prizes(ctx.guild).get(p["prize"])
+                awarded = datetime.datetime.fromtimestamp(p["awarded"])
+                print(member)
+
+                user = self.bot.get_user(int(member))
+                print(user)
+                output.append(
+                    f"{emoji.PRIZE_WINNER} {user.mention}: **{prize['name']}** ({humanize.naturaltime(datetime.datetime.now() - awarded)})"
+                )
+        await ctx.send("\n".join(output))
         await utils.success(ctx)

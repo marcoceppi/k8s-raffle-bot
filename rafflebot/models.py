@@ -38,6 +38,8 @@ class Settings(Model):
         "last-awarded": None,
         "awardable-role": None,
         "winner-dm-content": "",
+        "winner-announce-channel": None,
+        "winner-announce-content": "",
     }
 
     def valid(self, name):
@@ -147,6 +149,25 @@ class Winners(Model):
             when = time.time()
 
         await self.db.conn.zadd(self.key(), when, member)
-        await self.db.conn.sadd(self.key(member), prize)
+        await self.db.conn.zadd(self.key(member), when, prize)
 
         await AwardedPrizes(self.guild).insert(prize, member)
+
+    async def list(self, include_members=False):
+        winners = await self.db.conn.zrange(self.key(), 0, -1)
+
+        if not include_members:
+            return winners
+
+        output = {}
+
+        for member in winners:
+            prizes = await self.db.conn.zrange(self.key(member), 0, -1, withscores=True)
+
+            if member not in output:
+                output[member] = []
+
+            for awarded in prizes:
+                prize, timestamp = awarded
+                output[member].append({"awarded": timestamp, "prize": prize})
+        return output
