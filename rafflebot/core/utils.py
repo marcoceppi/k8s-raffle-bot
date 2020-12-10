@@ -13,17 +13,23 @@ class Singleton(type):
         return cls._instance
 
 
-async def success(ctx):
-    await ctx.message.add_reaction(emoji.SUCCESS)
-    await ctx.message.add_reaction(emoji.GOOD_JOB)
+def success(ctx):
+    return react(ctx, reactions=[emoji.SUCCESS, emoji.GOOD_JOB])
 
 
-async def failure(ctx, message=None):
+def failure(ctx, message=None):
+    return react(ctx, message, [emoji.FAILURE, emoji.OH_NO])
+
+
+
+async def react(ctx, message: Optional[str] = None, reactions: Optional[list] = None):
     if message:
         await ctx.send(message)
 
-    await ctx.message.add_reaction(emoji.FAILURE)
-    await ctx.message.add_reaction(emoji.OH_NO)
+    reactions = reactions if reactions else []
+
+    for r in reactions:
+        await ctx.message.add_reaction(r)
 
 
 def unmentioned(mentionable: str):

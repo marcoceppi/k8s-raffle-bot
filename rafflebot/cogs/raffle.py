@@ -51,9 +51,6 @@ class Raffle(commands.Cog):
             msg.format(member=member.mention, guild=member.guild, prize_name=prize["name"], prize_code=prize["code"])
         )
 
-    async def notify(self, channel, text):
-        pass
-
     async def award(self, guild: discord.Guild):
         members = await self.get_eligable_members(guild)
         prizes = await self.get_eligable_prizes(guild)
