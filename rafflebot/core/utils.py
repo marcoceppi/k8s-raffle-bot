@@ -21,6 +21,10 @@ def failure(ctx, message=None):
     return react(ctx, message, [emoji.FAILURE, emoji.OH_NO])
 
 
+def error(ctx, message=None):
+    return react(ctx, message, [emoji.WHAT])
+
+
 def denied(ctx):
     return react(ctx, None, [emoji.FAILURE, emoji.DENIED])
 

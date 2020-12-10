@@ -14,6 +14,9 @@ class RaffleBot(commands.Bot):
         asyncio.create_task(award.run())
 
     async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            return await utils.error(ctx)
+
         if isinstance(error, commands.MissingPermissions):
             return await utils.denied(ctx)
 
