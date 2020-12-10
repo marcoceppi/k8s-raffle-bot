@@ -2,6 +2,8 @@ GOOD_JOB = "👍"
 SUCCESS = "✨"
 FAILURE = "🔴"
 OH_NO = "😭"
+WHAT = "⁉️"
+DENIED = "🚫"
 
 PRIZE_AWARDED = "🎉"
 PRIZE_AVAILABLE = "🎁"

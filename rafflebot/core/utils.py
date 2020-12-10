@@ -21,6 +21,9 @@ def failure(ctx, message=None):
     return react(ctx, message, [emoji.FAILURE, emoji.OH_NO])
 
 
+def denied(ctx):
+    return react(ctx, None, [emoji.FAILURE, emoji.DENIED])
+
 
 async def react(ctx, message: Optional[str] = None, reactions: Optional[list] = None):
     if message:

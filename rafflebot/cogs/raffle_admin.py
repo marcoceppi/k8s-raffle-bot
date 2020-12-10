@@ -12,6 +12,7 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
         self.bot = bot
 
     @commands.command(name="add-prize")
+    @commands.has_permissions(administrator=True)
     async def add_prize(self, ctx, *args):
         if len(args) != 2:
             return await utils.failure(
@@ -23,6 +24,7 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
         await utils.success(ctx)
 
     @commands.command(name="remove-prize")
+    @commands.has_permissions(administrator=True)
     async def remove_prize(self, ctx, prize_id):
         if not (await models.Prizes(ctx.guild).remove(prize_id)):
             return await utils.failure(ctx)
@@ -33,6 +35,7 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
         return emoji.emoji_status(prize, awarded_prizes, emoji.PRIZE_AWARDED, emoji.PRIZE_AVAILABLE)
 
     @commands.command(name="list-prizes")
+    @commands.has_permissions(administrator=True)
     async def list_prizes(self, ctx):
         prizes = await models.Prizes(ctx.guild).list(include_members=True)
         awarded_prizes = await models.AwardedPrizes(ctx.guild).list()
@@ -46,6 +49,7 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
         await utils.success(ctx)
 
     @commands.command(name="list-settings")
+    @commands.has_permissions(administrator=True)
     async def list_settings(self, ctx):
         settings = await models.Settings(ctx.guild).list()
         settings = [f"{emoji.SETTING} {k}: {v}" for k, v in settings.items()]
@@ -53,6 +57,7 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
         await utils.success(ctx)
 
     @commands.command(name="update-setting")
+    @commands.has_permissions(administrator=True)
     async def update_settings(self, ctx: commands.Context, name, *args):
         print(ctx.message.content)
         value = ctx.message.content.split(f"{name} ")[1]
@@ -63,6 +68,7 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
         await utils.success(ctx)
 
     @commands.command(name="reset-setting")
+    @commands.has_permissions(administrator=True)
     async def reset_settings(self, ctx, name):
         if not (await models.Settings(ctx.guild).remove(name)):
             return await utils.failure(ctx)
@@ -70,6 +76,7 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
         await utils.success(ctx)
 
     @commands.command(name="list-winners")
+    @commands.has_permissions(administrator=True)
     async def list_winners(self, ctx):
         winners = await models.Winners(ctx.guild).list(include_members=True)
 
