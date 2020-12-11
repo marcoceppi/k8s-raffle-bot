@@ -20,4 +20,7 @@ class RaffleBot(commands.Bot):
         if isinstance(error, commands.MissingPermissions):
             return await utils.denied(ctx)
 
+        if isinstance(error, commands.CommandInvokeError):
+            await utils.error(ctx)
+
         await super().on_command_error(ctx, error)
