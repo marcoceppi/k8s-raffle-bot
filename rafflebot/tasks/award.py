@@ -23,6 +23,10 @@ class Award:
         cog = self.bot.get_cog("Raffle")
         settings = Settings(guild)
 
+        enabled = await settings.get("enabled")
+        if not enabled:
+            return
+
         last_run = await settings.get("last-awarded") or 0
         interval = await settings.get("award-interval")
 

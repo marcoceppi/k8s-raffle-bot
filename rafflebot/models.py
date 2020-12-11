@@ -34,6 +34,7 @@ class Settings(Model):
     model = "settings"
 
     default_settings = {
+        "enabled": False,
         "award-interval": 60,
         "last-awarded": None,
         "awardable-role": None,
