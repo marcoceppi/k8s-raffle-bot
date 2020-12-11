@@ -33,8 +33,9 @@ class Award:
         prizes = await cog.get_eligable_prizes(guild)
 
         if self.can_award(last_run, interval, prizes):
-            await cog.award(guild)
-            await settings.update("last-awarded", time.time())
+            winner = await cog.run(guild)
+            if winner:
+                await settings.update("last-awarded", time.time())
 
     async def run(self):
         await self.bot.wait_until_ready()
