@@ -41,3 +41,21 @@ async def react(ctx, message: Optional[str] = None, reactions: Optional[list] = 
 
 def unmentioned(mentionable: str):
     return re.sub(r"[<>#@]", "", mentionable)
+
+
+async def send(ctx, message: str):
+    if len(message) < 1200:
+        return await ctx.send(message)
+
+    chars = 0
+    lines = message.split("\n")
+    output = ""
+    for line in lines:
+        if chars + len(line) > 1200:
+            await ctx.send(output)
+            output = ""
+            chars = 0
+        chars += len(line)
+        output = "\n".join([output, line])
+
+    await ctx.send(output)

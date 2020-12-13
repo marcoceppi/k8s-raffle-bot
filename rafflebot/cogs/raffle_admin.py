@@ -44,7 +44,7 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
             f"{self.prize_status(k, awarded_prizes)} {val['name']} ({k.split('-')[0]})" for k, val in prizes.items()
         ]
         if prizes:
-            await ctx.send("\n".join(prizes))
+            await utils.send(ctx, "\n".join(prizes))
 
         await utils.success(ctx)
 
@@ -93,5 +93,5 @@ class RaffleAdmin(commands.Cog, name="Raffle Administration"):
                 output.append(
                     f"{emoji.PRIZE_WINNER} {user.mention}: **{prize['name']}** ({humanize.naturaltime(datetime.datetime.now() - awarded)})"
                 )
-        await ctx.send("\n".join(output))
+        await utils.send(ctx, "\n".join(output))
         await utils.success(ctx)
